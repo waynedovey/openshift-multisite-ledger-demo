@@ -11,7 +11,11 @@ spec:
       containers:
         - name: web
           env:
+            - name: WRITE_HOSTS
+              value: ledger-postgres-site-a
+            - name: WRITE_PORTS
+              value: "5432"
             - name: LOCAL_READ_HOST
-              value: ledger-db-replica-rw
+              value: ledger-db-replica-r
             - name: LOCAL_DB_LABEL
               value: Site B PostgreSQL streaming replica

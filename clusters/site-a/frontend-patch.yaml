@@ -11,6 +11,10 @@ spec:
       containers:
         - name: web
           env:
+            - name: WRITE_HOSTS
+              value: ledger-db-rw
+            - name: WRITE_PORTS
+              value: "5432"
             - name: LOCAL_READ_HOST
               value: ledger-db-rw
             - name: LOCAL_DB_LABEL
