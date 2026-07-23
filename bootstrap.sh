@@ -68,6 +68,9 @@ for item in "${SITE_A_CLUSTER}|${SITE_A_KUBECONFIG}" "${SITE_B_CLUSTER}|${SITE_B
 done
 
 log "Writing application credentials to the existing Vault instances"
+
+[[ -n "${VAULT_TOKEN:-}" ]] || fail   "Vault token not found. Add VAULT_TOKEN to .work/demo.env or pass --vault-token."
+
 DB_PASSWORD="$(openssl rand -base64 30 | tr -d '\n')"
 vault_put "$SITE_A_KUBECONFIG" multisite-ledger/app username=ledger password="$DB_PASSWORD" database=ledger
 vault_put "$SITE_B_KUBECONFIG" multisite-ledger/app username=ledger password="$DB_PASSWORD" database=ledger
