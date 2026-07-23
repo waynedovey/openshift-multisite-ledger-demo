@@ -1,0 +1,110 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ledger-web
+  labels:
+    app.kubernetes.io/name: ledger-web
+    app.kubernetes.io/part-of: multisite-ledger
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ledger-web
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ledger-web
+        app.kubernetes.io/part-of: multisite-ledger
+        demo.redhat.com/frontend-role: standby
+    spec:
+      containers:
+        - name: web
+          image: registry.access.redhat.com/ubi9/python-311:latest
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/bash
+            - -ec
+          args:
+            - |
+              python -m pip install --disable-pip-version-check --no-cache-dir --target /tmp/python-deps -r /opt/ledger/requirements.txt
+              export PYTHONPATH=/tmp/python-deps
+              exec python -m gunicorn --chdir /opt/ledger --bind 0.0.0.0:8080 --workers 2 --threads 4 --timeout 60 app:app
+          env:
+            - name: SITE_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: ledger-site-config
+                  key: site-id
+            - name: SITE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: ledger-site-config
+                  key: site-name
+            - name: FRONTEND_ROLE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['demo.redhat.com/frontend-role']
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: ledger-db-app
+                  key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ledger-db-app
+                  key: password
+            - name: DB_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: ledger-db-app
+                  key: database
+            - name: WRITE_HOSTS
+              value: ledger-postgres-site-a,ledger-postgres-site-b
+            - name: WRITE_PORTS
+              value: 5432,5432
+            - name: LOCAL_READ_HOST
+              value: ledger-db-rw
+            - name: LOCAL_DB_LABEL
+              value: Site A local primary
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            failureThreshold: 12
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 45
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+          volumeMounts:
+            - name: ledger-code
+              mountPath: /opt/ledger
+              readOnly: true
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      volumes:
+        - name: ledger-code
+          configMap:
+            name: ledger-web-code

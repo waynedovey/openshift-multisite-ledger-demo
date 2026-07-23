@@ -1,0 +1,63 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: multisite-ledger-site-a
+  namespace: openshift-gitops
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: __REPO_URL__
+    targetRevision: __REVISION__
+    path: clusters/site-a
+  destination:
+    name: __SITE_A_CLUSTER__
+    namespace: multisite-ledger
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      name: ledger-web
+      namespace: multisite-ledger
+      jsonPointers:
+        - /spec/template/metadata/labels/demo.redhat.com~1frontend-role
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - RespectIgnoreDifferences=true
+      - ServerSideApply=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: multisite-ledger-site-b
+  namespace: openshift-gitops
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: __REPO_URL__
+    targetRevision: __REVISION__
+    path: clusters/site-b
+  destination:
+    name: __SITE_B_CLUSTER__
+    namespace: multisite-ledger
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      name: ledger-web
+      namespace: multisite-ledger
+      jsonPointers:
+        - /spec/template/metadata/labels/demo.redhat.com~1frontend-role
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - RespectIgnoreDifferences=true
+      - ServerSideApply=true

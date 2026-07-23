@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ledger-web
+  labels:
+    app.kubernetes.io/name: ledger-web
+spec:
+  selector:
+    app.kubernetes.io/name: ledger-web
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http

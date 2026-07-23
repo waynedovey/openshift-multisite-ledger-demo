@@ -1,0 +1,28 @@
+apiVersion: skupper.io/v2alpha1
+kind: Site
+metadata:
+  name: ledger-site-b
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+---
+apiVersion: skupper.io/v2alpha1
+kind: Connector
+metadata:
+  name: ledger-postgres-site-b
+  annotations:
+    argocd.argoproj.io/sync-wave: "40"
+spec:
+  routingKey: ledger-postgres-site-b
+  port: 5432
+  host: ledger-db-replica-rw
+---
+apiVersion: skupper.io/v2alpha1
+kind: Listener
+metadata:
+  name: ledger-postgres-site-a
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+spec:
+  routingKey: ledger-postgres-site-a
+  port: 5432
+  host: ledger-postgres-site-a

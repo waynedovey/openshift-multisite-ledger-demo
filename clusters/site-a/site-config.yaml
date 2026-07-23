@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ledger-site-config
+data:
+  site-id: cluster-pwv6d
+  site-name: Site A

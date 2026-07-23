@@ -1,0 +1,38 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: ledger-db-replica
+  annotations:
+    argocd.argoproj.io/sync-wave: "30"
+spec:
+  instances: 2
+  bootstrap:
+    pg_basebackup:
+      source: ledger-db
+  replica:
+    enabled: true
+    source: ledger-db
+  externalClusters:
+    - name: ledger-db
+      connectionParameters:
+        host: ledger-postgres-site-a
+        port: "5432"
+        user: streaming_replica
+        sslmode: verify-ca
+        application_name: ledger-db-replica
+      sslKey:
+        name: ledger-db-replication
+        key: tls.key
+      sslCert:
+        name: ledger-db-replication
+        key: tls.crt
+      sslRootCert:
+        name: ledger-db-ca
+        key: ca.crt
+  storage:
+    size: 5Gi
+  replicationSlots:
+    highAvailability:
+      enabled: true
+  monitoring:
+    enablePodMonitor: true

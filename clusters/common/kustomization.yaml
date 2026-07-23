@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - namespace.yaml
+  - external-secret-app.yaml
+  - frontend.yaml
+  - service.yaml
+  - route.yaml
+  - network-observer.yaml
+
+configMapGenerator:
+  - name: ledger-web-code
+    files:
+      - app.py=app/app.py
+      - requirements.txt=app/requirements.txt
+
+generatorOptions:
+  disableNameSuffixHash: false
+  labels:
+    app.kubernetes.io/name: ledger-web
+    app.kubernetes.io/part-of: multisite-ledger

@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ledger-web
+spec:
+  template:
+    metadata:
+      labels:
+        demo.redhat.com/frontend-role: standby
+    spec:
+      containers:
+        - name: web
+          env:
+            - name: LOCAL_READ_HOST
+              value: ledger-db-replica-rw
+            - name: LOCAL_DB_LABEL
+              value: Site B PostgreSQL streaming replica

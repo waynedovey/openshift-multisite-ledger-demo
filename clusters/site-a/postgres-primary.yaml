@@ -1,0 +1,41 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: ledger-db
+  annotations:
+    argocd.argoproj.io/sync-wave: "10"
+spec:
+  instances: 2
+  enableSuperuserAccess: true
+  bootstrap:
+    initdb:
+      database: ledger
+      owner: ledger
+      secret:
+        name: ledger-db-app
+      postInitApplicationSQL:
+        - |
+          CREATE TABLE IF NOT EXISTS public.ledger_entries (
+            id BIGSERIAL PRIMARY KEY,
+            origin_site TEXT NOT NULL,
+            message TEXT NOT NULL,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+          );
+
+          ALTER TABLE public.ledger_entries OWNER TO ledger;
+          ALTER SEQUENCE public.ledger_entries_id_seq OWNER TO ledger;
+          GRANT USAGE ON SCHEMA public TO ledger;
+          GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.ledger_entries TO ledger;
+          GRANT USAGE, SELECT, UPDATE ON SEQUENCE public.ledger_entries_id_seq TO ledger;
+  storage:
+    size: 5Gi
+  replicationSlots:
+    highAvailability:
+      enabled: true
+  postgresql:
+    parameters:
+      max_wal_senders: "10"
+      max_replication_slots: "10"
+      wal_keep_size: 1GB
+  monitoring:
+    enablePodMonitor: true
