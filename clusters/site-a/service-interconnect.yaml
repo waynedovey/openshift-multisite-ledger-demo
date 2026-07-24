@@ -5,6 +5,7 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "0"
 spec:
+  ha: true
   linkAccess: default
 ---
 apiVersion: skupper.io/v2alpha1
