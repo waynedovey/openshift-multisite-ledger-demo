@@ -8,7 +8,18 @@ SITE_B_CLUSTER="${SITE_B_CLUSTER:-cluster-7b6lh}"
 SITE_A_KUBECONFIG="${SITE_A_KUBECONFIG:-${ROOT_DIR}/.work/kubeconfigs/${SITE_A_CLUSTER}.kubeconfig}"
 SITE_B_KUBECONFIG="${SITE_B_KUBECONFIG:-${ROOT_DIR}/.work/kubeconfigs/${SITE_B_CLUSTER}.kubeconfig}"
 VAULT_NAMESPACE="${VAULT_NAMESPACE:-vault-demo}"
-VAULT_TOKEN="${VAULT_TOKEN:-root}"
+VAULT_ENV_FILE="${VAULT_ENV_FILE:-${ROOT_DIR}/.work/demo.env}"
+
+if [[ -z "${VAULT_TOKEN:-}" && -f "${VAULT_ENV_FILE}" ]]; then
+  VAULT_TOKEN="$(
+    bash -c '
+      source "$1"
+      printf "%s" "${VAULT_TOKEN:-}"
+    ' _ "${VAULT_ENV_FILE}"
+  )"
+fi
+
+VAULT_TOKEN="${VAULT_TOKEN:-}"
 
 log() { printf '\n[%s] %s\n' "$(date '+%H:%M:%S')" "$*"; }
 ok() { printf '[OK] %s\n' "$*"; }
