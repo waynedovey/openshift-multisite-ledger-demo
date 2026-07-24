@@ -4,6 +4,8 @@ metadata:
   name: ledger-site-b
   annotations:
     argocd.argoproj.io/sync-wave: "0"
+spec:
+  ha: true
 ---
 apiVersion: skupper.io/v2alpha1
 kind: Connector
